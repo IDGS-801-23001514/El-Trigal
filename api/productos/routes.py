@@ -52,7 +52,7 @@ def inicio():
     
     # Obtener categorías para el filtro
     categorias = CategoriaProducto.query.filter_by(estatus='ACTIVO').all()
-    
+    form_eliminar = ConfirmarEliminacionProductoForm()
     return render_template(
         'productos/inicio.html',
         productos=productos_data,
@@ -60,9 +60,9 @@ def inicio():
         buscar=buscar,
         categoria_id=categoria_id,
         pagination=productos_list,
-        page=page
+        page=page,
+        form_eliminar=form_eliminar  # 👈 ESTE FALTABA
     )
-
 
 @productos.route('/agregar', methods=['GET', 'POST'])
 def agregar():
@@ -187,8 +187,7 @@ def editar(id):
             db.session.commit()
             
             flash(f'Producto "{producto.nombre}" actualizado exitosamente', 'success')
-            return redirect(url_for('productos.detalle', id=producto.id))
-            
+            return redirect(url_for('productos.inicio'))            
         except Exception as e:
             db.session.rollback()
             flash(f'Error al actualizar el producto: {str(e)}', 'error')
@@ -212,48 +211,29 @@ def editar(id):
     return render_template('productos/editar.html', form=form, producto=producto_data)
 
 
-@productos.route('/eliminar/<int:id>', methods=['GET', 'POST'])
+@productos.route('/eliminar/<int:id>', methods=['POST'])
 def eliminar(id):
-    """Desactivar un producto (soft delete)"""
     producto = Producto.query.get_or_404(id)
-    
-    if producto.estatus != 'ACTIVO':
-        flash('El producto ya está inactivo', 'info')
-        return redirect(url_for('productos.inicio'))
-    
     form = ConfirmarEliminacionProductoForm()
-    
-    if form.validate_on_submit():
-        if form.confirm.data:
-            try:
-                # Realizar soft delete
-                producto.estatus = 'INACTIVO'
-                producto.usuario_movimiento = get_user_id()
-                producto.fecha_movimiento = datetime.utcnow()
-                
-                db.session.commit()
-                
-                flash(f'Producto "{producto.nombre}" desactivado exitosamente', 'success')
-                return redirect(url_for('productos.inicio'))
-                
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Error al desactivar el producto: {str(e)}', 'error')
-                return redirect(url_for('productos.eliminar', id=id))
-        
-        elif form.cancel.data:
-            return redirect(url_for('productos.inicio'))
-    
-    producto_data = {
-        'id': producto.id,
-        'nombre': producto.nombre,
-        'precio': float(producto.precio),
-        'costo': float(producto.costo_produccion),
-        'categoria': producto.categoria.nombre,
-    }
-    
-    return render_template('productos/eliminar.html', form=form, producto=producto_data)
 
+    if form.validate_on_submit():
+        try:
+            producto.estatus = 'INACTIVO'
+            producto.usuario_movimiento = get_user_id()
+            producto.fecha_movimiento = datetime.utcnow()
+
+            db.session.commit()
+
+            flash(f'Producto "{producto.nombre}" desactivado exitosamente', 'success')
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al desactivar el producto: {str(e)}', 'error')
+
+    else:
+        flash("Error CSRF o formulario inválido", "error")
+
+    return redirect(url_for('productos.inicio'))
 
 @productos.errorhandler(404)
 def not_found(error):

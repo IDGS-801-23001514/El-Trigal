@@ -1,2 +1,217 @@
-{% extends "internal_layout.html" %}
-{% block module_content %}{% include "_module_inicio_content.html" %}{% endblock %}
+{% extends "base.html" %}
+{% block title %}Categorías de Productos{% endblock %}
+
+{% block content %}
+
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-[#6b4f3a]">Categoría de productos</h1>
+
+    <a href="{{ url_for('categorias_productos.agregar') }}"
+       class="bg-[#a67c52] text-white px-4 py-2 rounded-lg hover:bg-[#8d6846]">
+        Agregar categoría +
+    </a>
+</div>
+
+<!-- Mensajes de alerta -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="p-4 mb-4 rounded-lg
+                {% if category == 'error' %}bg-red-100 text-red-700
+                {% elif category == 'success' %}bg-green-100 text-green-700
+                {% elif category == 'warning' %}bg-yellow-100 text-yellow-700
+                {% else %}bg-blue-100 text-blue-700
+                {% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Buscador -->
+<div class="flex gap-4 mb-6">
+    <form method="GET" class="flex gap-4 w-full">
+        <input type="text" name="buscar" placeholder="Buscar categoría..."
+            value="{{ buscar }}"
+            class="px-4 py-2 rounded-lg w-1/3 border border-gray-300">
+
+        <button type="submit" class="bg-[#a67c52] text-white px-4 py-2 rounded-lg hover:bg-[#8d6846]">
+            Buscar
+        </button>
+    </form>
+</div>
+
+<!-- Cards -->
+<div class="grid grid-cols-3 gap-6">
+
+{% if categorias %}
+    {% for cat in categorias %}
+    <div class="bg-white rounded-xl p-4 shadow-md">
+
+        <h2 class="font-semibold text-[#a67c52] mb-2 cursor-pointer"
+            onclick="openDetailModal('{{ cat.nombre }}', `{{ cat.descripcion }}`, {{ cat.id }})">
+            {{ cat.nombre }}
+        </h2>
+        <p class="text-sm text-gray-600 mb-4">
+            {{ cat.descripcion[:100] }}{% if cat.descripcion|length > 100 %}...{% endif %}
+        </p>
+
+        <div class="flex gap-2 mt-3">
+            <button
+            onclick="openDetailModal('{{ cat.nombre }}', `{{ cat.descripcion }}`, {{ cat.id }})"
+            class="border px-3 py-1 rounded-lg text-sm hover:bg-blue-50">
+            Ver
+            </button>
+
+            <a href="{{ url_for('categorias_productos.editar', id=cat.id) }}"
+               class="border px-3 py-1 rounded-lg text-sm hover:bg-yellow-50">
+               Editar
+            </a>
+
+            <button onclick="openDeleteModal('{{ cat.nombre }}', {{ cat.id }})"
+            class="border border-red-500 text-red-500 px-3 py-1 rounded-lg text-sm hover:bg-red-50">
+            Eliminar
+            </button>
+        </div>
+
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="col-span-3 text-center py-12">
+        <p class="text-gray-500 text-lg">No hay categorías disponibles</p>
+        <a href="{{ url_for('categorias_productos.agregar') }}" class="text-[#a67c52] hover:underline mt-2 inline-block">
+            Crear la primera categoría
+        </a>
+    </div>
+{% endif %}
+
+</div>
+
+<!-- Paginación -->
+{% if pagination %}
+    <div class="mt-8 flex justify-center gap-2">
+        {% if pagination.has_prev %}
+            <a href="{{ url_for('categorias_productos.inicio', page=pagination.prev_num, buscar=buscar) }}"
+               class="px-4 py-2 border rounded hover:bg-gray-100">
+                Anterior
+            </a>
+        {% endif %}
+
+        {% for page_num in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+            {% if page_num %}
+                {% if page_num == page %}
+                    <span class="px-4 py-2 bg-[#a67c52] text-white rounded">{{ page_num }}</span>
+                {% else %}
+                    <a href="{{ url_for('categorias_productos.inicio', page=page_num, buscar=buscar) }}"
+                       class="px-4 py-2 border rounded hover:bg-gray-100">
+                        {{ page_num }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <span class="px-4 py-2">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a href="{{ url_for('categorias_productos.inicio', page=pagination.next_num, buscar=buscar) }}"
+               class="px-4 py-2 border rounded hover:bg-gray-100">
+                Siguiente
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+
+<!-- MODAL ELIMINAR -->
+<div id="modalEliminar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+
+    <div class="bg-white p-6 rounded-xl w-96 text-center shadow-md">
+
+        <h2 class="text-lg font-bold text-[#6b4f3a] mb-4">
+            Confirmar eliminación
+        </h2>
+
+        <p class="mb-4">
+            ¿Estás seguro de eliminar esta categoría?
+        </p>
+
+        <p id="deleteNombre" class="mb-6 text-[#a67c52] font-semibold"></p>
+
+        <form id="formEliminar" method="POST">
+            <div class="flex justify-center gap-4">
+
+                <button class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                    Sí, eliminar
+                </button>
+
+                <button type="button" onclick="closeModal('modalEliminar')"
+                    class="bg-gray-400 text-white px-4 py-2 rounded-lg">
+                    Cancelar
+                </button>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div id="modalDetalle" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+
+    <div class="bg-[#efe3c6] p-6 rounded-xl w-[500px]">
+
+        <h2 class="text-xl font-bold text-[#6b4f3a] mb-4" id="detalleTitulo"></h2>
+
+        <div>
+            <p class="font-semibold text-[#a67c52] mb-1">Descripción:</p>
+            <p id="detalleDescripcion" class="text-sm text-gray-700 leading-relaxed"></p>
+
+            <p class="text-xs text-orange-600 mt-4">
+                ⚠️ ADVERTENCIA: No se puede desactivar la categoría si tiene productos activos
+            </p>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+            <a id="btnEditar"
+               class="bg-[#a67c52] text-white px-4 py-2 rounded-lg hover:bg-[#8d6846]">
+                Editar detalles
+            </a>
+
+            <button onclick="closeModal('modalDetalle')"
+                class="border border-[#a67c52] px-4 py-2 rounded-lg hover:bg-[#d2a679]">
+                Cerrar ventana
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function openDetailModal(nombre, descripcion, id){
+    document.getElementById('modalDetalle').classList.remove('hidden')
+
+    document.getElementById('detalleTitulo').innerText =
+        "Detalle de la categoría de producto: " + nombre
+
+    document.getElementById('detalleDescripcion').innerText = descripcion
+
+    document.getElementById('btnEditar').href =
+    "{{ url_for('categorias_productos.editar', id=0) }}".replace("0", id)
+}
+
+function closeModal(id){
+    document.getElementById(id).classList.add('hidden')
+}
+
+function openDeleteModal(nombre, id){
+    document.getElementById('modalEliminar').classList.remove('hidden')
+
+    document.getElementById('deleteNombre').innerText = "Categoría: " + nombre
+    document.getElementById('formEliminar').action =
+    "{{ url_for('categorias_productos.eliminar', id=0) }}".replace("0", id)
+}
+function closeModal(id){
+    document.getElementById(id).classList.add('hidden')
+}
+
+</script>
+{% endblock %}

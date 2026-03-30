@@ -120,3 +120,73 @@ class ConfirmarEliminacionProductoForm(FlaskForm):
     
     confirm = SubmitField('Sí, desactivar')
     cancel = SubmitField('Cancelar')
+
+
+# ============================================================================
+# FORMULARIOS PARA CATEGORÍAS DE PRODUCTOS
+# ============================================================================
+
+class CategoriaProductoForm(FlaskForm):
+    """Formulario para crear y editar categorías de productos"""
+    
+    nombre = StringField(
+        'Nombre de la Categoría',
+        validators=[
+            DataRequired(message='El nombre es requerido'),
+            Length(min=3, max=65, message='El nombre debe tener entre 3 y 65 caracteres')
+        ],
+        render_kw={"placeholder": "Nombre de la categoría"}
+    )
+    
+    descripcion = TextAreaField(
+        'Descripción',
+        validators=[
+            DataRequired(message='La descripción es requerida'),
+            Length(min=5, max=500, message='La descripción debe tener entre 5 y 500 caracteres')
+        ],
+        render_kw={"placeholder": "Descripción de la categoría", "rows": 4}
+    )
+    
+    submit = SubmitField('Guardar')
+    
+    def validate_nombre(self, field):
+        """Validar que el nombre sea único"""
+        categoria = CategoriaProducto.query.filter_by(nombre=field.data).first()
+        if categoria:
+            raise ValidationError('Ya existe una categoría con este nombre')
+
+
+class EditCategoriaProductoForm(CategoriaProductoForm):
+    """Formulario específico para editar categorías"""
+    
+    def validate_nombre(self, field):
+        """Permitir el mismo nombre si es la misma categoría"""
+        # Si es la misma categoría, permitir
+        if hasattr(self, 'categoria_id') and self.categoria_id:
+            categoria = CategoriaProducto.query.get(self.categoria_id)
+            if categoria and categoria.nombre == field.data:
+                return
+        
+        # Sino, verificar que no exista otra con ese nombre
+        categoria = CategoriaProducto.query.filter_by(nombre=field.data).first()
+        if categoria:
+            raise ValidationError('Ya existe otra categoría con este nombre')
+
+
+class BuscarCategoriaForm(FlaskForm):
+    """Formulario para buscar categorías"""
+    
+    buscar = StringField(
+        'Buscar categoría',
+        validators=[Length(min=0, max=100)],
+        render_kw={"placeholder": "Buscar por nombre..."}
+    )
+    
+    submit = SubmitField('Buscar')
+
+
+class ConfirmarEliminacionCategoriaForm(FlaskForm):
+    """Formulario para confirmar eliminación de categoría"""
+    
+    confirm = SubmitField('Sí, desactivar')
+    cancel = SubmitField('Cancelar')

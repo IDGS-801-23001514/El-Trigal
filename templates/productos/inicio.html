@@ -70,10 +70,10 @@
             Editar
         </a>
 
-        <a href="{{ url_for('productos.eliminar', id=producto.id) }}"
-           class="px-2 py-1 text-xs border border-red-500 text-red-500 rounded hover:bg-red-50">
-            Eliminar
-        </a>
+        <button onclick="openDeleteModal('{{ producto.nombre }}', {{ producto.id }})"
+        class="px-2 py-1 text-xs border border-red-500 text-red-500 rounded hover:bg-red-50">
+        Eliminar
+        </button>
     </div>
 
     <div id="producto-{{ producto.id }}" class="hidden">
@@ -87,6 +87,42 @@
 </div>
 {% endfor %}
 
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div id="modalEliminar" class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-xl w-96 text-center shadow-md">
+
+        <h2 class="text-lg font-bold text-[#6b4f3a] mb-4">
+            Confirmar eliminación
+        </h2>
+
+        <p class="mb-4">
+            ¿Estás seguro de eliminar este producto?
+        </p>
+
+        <p id="deleteNombre" class="mb-6 text-[#a67c52] font-semibold"></p>
+
+        <form id="formEliminar" method="POST">
+
+            {{ form_eliminar.hidden_tag() }}
+
+            <div class="flex justify-center gap-4">
+
+                {{ form_eliminar.confirm(
+                    class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                ) }}
+
+                <button type="button" onclick="closeModal('modalEliminar')"
+                    class="bg-gray-400 text-white px-4 py-2 rounded-lg">
+                    Cancelar
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
 </div>
 
 <!-- MODAL -->
@@ -142,6 +178,25 @@ function abrirModal(id) {
 function cerrarModal() {
     document.getElementById("modal").classList.add("hidden");
 }
+
+function openDeleteModal(nombre, id){
+    let modal = document.getElementById('modalEliminar')
+
+    modal.classList.remove('hidden')
+    modal.classList.add('flex')
+
+    document.getElementById('deleteNombre').innerText = "Producto: " + nombre
+
+    document.getElementById('formEliminar').action =
+        "{{ url_for('productos.eliminar', id=0) }}".replace("0", id)
+}
+
+function closeModal(id){
+    let modal = document.getElementById(id)
+    modal.classList.add('hidden')
+    modal.classList.remove('flex')
+}
+
 </script>
 
 {% endblock %}

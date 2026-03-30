@@ -15,11 +15,31 @@
             <img src="{{ url_for('static', filename='img/logo.png') }}" class="w-24">
         </div>
 
-        <nav class="w-full">
-            <a href="#" class="block px-6 py-3 bg-[#b9772b]">
-                Productos
-            </a>
-        </nav>
+        <nav class="w-full space-y-2 px-2">
+
+    <!-- Productos -->
+    <a href="{{ url_for('productos.inicio') }}"
+       class="block px-6 py-3 rounded-lg transition
+       {% if request.endpoint.startswith('productos') %}
+           bg-[#ae712f] text-white
+       {% else %}
+           bg-[#b9772b] hover:bg-[#ae712f]/80 text-white
+       {% endif %}">
+        Productos
+    </a>
+
+    <!-- Categorías -->
+    <a href="{{ url_for('categorias_productos.inicio') }}"
+       class="block px-6 py-3 rounded-lg transition
+       {% if request.endpoint.startswith('categorias_productos') %}
+           bg-[#ae712f] text-white
+       {% else %}
+           bg-[#b9772b] hover:bg-[#ae712f]/80 text-white
+       {% endif %}">
+        Categorías de productos
+    </a>
+
+</nav>
     </aside>
 
     <!-- Contenido -->
