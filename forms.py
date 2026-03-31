@@ -1,9 +1,9 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, DecimalField, SelectField, SubmitField, TextAreaField
+from wtforms import IntegerField, StringField, DecimalField, SelectField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, NumberRange, ValidationError
-from models import Producto, CategoriaProducto
-
+from models import Producto, CategoriaProducto, InventarioProducto, Sucursal
+from wtforms import StringField, SelectField, SubmitField, TextAreaField
 
 class ProductoForm(FlaskForm):
     """Formulario para crear y editar productos"""
@@ -187,6 +187,118 @@ class BuscarCategoriaForm(FlaskForm):
 
 class ConfirmarEliminacionCategoriaForm(FlaskForm):
     """Formulario para confirmar eliminación de categoría"""
+    
+    confirm = SubmitField('Sí, desactivar')
+    cancel = SubmitField('Cancelar')
+
+
+# ============================================================================
+# FORMULARIOS PARA INVENTARIO DE PRODUCTOS
+# ============================================================================
+
+class InventarioProductoForm(FlaskForm):
+    """Formulario para crear y registrar inventario de productos"""
+    
+    fk_producto = SelectField(
+        'Producto',
+        validators=[DataRequired(message='El producto es requerido')],
+        coerce=int,
+        render_kw={"class": "border px-3 py-2 rounded-lg"}
+    )
+    
+    fk_sucursal = SelectField(
+        'Sucursal',
+        validators=[DataRequired(message='La sucursal es requerida')],
+        coerce=int,
+        render_kw={"class": "border px-3 py-2 rounded-lg"}
+    )
+    
+    cantidad_producto = DecimalField(
+        'Cantidad',
+        validators=[
+            DataRequired(message='La cantidad es requerida'),
+            NumberRange(min=0.01, message='La cantidad debe ser mayor a 0')
+        ],
+        places=2,
+        render_kw={"placeholder": "0.00", "step": "0.01", "min": "0"}
+    )
+    
+    fecha_caducidad = StringField(
+        'Fecha de Caducidad',
+        validators=[DataRequired(message='La fecha de caducidad es requerida')],
+        render_kw={"type": "datetime-local", "placeholder": "YYYY-MM-DD HH:MM"}
+    )
+    
+    submit = SubmitField('Guardar')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Cargar productos activos
+        self.fk_producto.choices = [
+            (p.id, p.nombre) for p in Producto.query.filter_by(estatus='ACTIVO').all()
+        ]
+        # Cargar sucursales activas
+        self.fk_sucursal.choices = [
+            (s.id, s.nombre) for s in Sucursal.query.filter_by(estatus='ACTIVO').all()
+        ]
+
+
+class EditInventarioProductoForm(FlaskForm):
+    """Formulario para editar inventario (M14)"""
+
+    cantidad_producto = IntegerField(
+    'Cantidad de producto',
+    validators=[
+        DataRequired(message='La cantidad es requerida'),
+        NumberRange(min=0, message='No puede ser negativa')
+    ],
+    render_kw={
+        "placeholder": "0",
+        "min": "0",
+        "step": "1"
+    }
+)
+
+    tipo_movimiento = SelectField(
+        'Motivo',
+        choices=[
+            ('MERMA', 'Merma'),
+            ('AUDITORIA', 'Auditoría')
+        ],
+        validators=[DataRequired(message='El motivo es obligatorio')]
+    )
+
+    observaciones = TextAreaField(
+    'Observaciones',
+    validators=[
+        DataRequired(message='Las observaciones son obligatorias'),
+        Length(max=255, message='Máximo 255 caracteres')
+    ],
+    render_kw={"placeholder": "Describe el motivo..."}
+)
+
+    submit = SubmitField('Guardar')
+
+class BuscarInventarioForm(FlaskForm):
+    """Formulario para buscar en inventario"""
+    
+    buscar = StringField(
+        'Buscar producto',
+        validators=[Length(min=0, max=100)],
+        render_kw={"placeholder": "Buscar por nombre del producto..."}
+    )
+    
+    estado_filter = SelectField(
+        'Estado del Inventario',
+        choices=[('', 'Todos'), ('EXISTENCIA', 'Con existencia'), ('AGOTADO', 'Agotado')],
+        render_kw={"class": "border px-3 py-2 rounded-lg"}
+    )
+    
+    submit = SubmitField('Buscar')
+
+
+class ConfirmarEliminacionInventarioForm(FlaskForm):
+    """Formulario para confirmar eliminación de inventario"""
     
     confirm = SubmitField('Sí, desactivar')
     cancel = SubmitField('Cancelar')

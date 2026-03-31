@@ -245,8 +245,8 @@ def create_module_blueprint(module_slug):
     module = MODULE_MAP[module_slug]
     blueprint = Blueprint(module_slug.replace("-", "_"), __name__, template_folder="../templates")
 
-    # ⚠️ SOLO crear rutas SI NO es productos o categorias productos
-    if module_slug not in ("productos", "categorias-productos"):
+    # ⚠️ SOLO crear rutas SI NO es productos, categorias productos o inventario productos
+    if module_slug not in ("productos", "categorias-productos", "inventario-productos"):
 
         @blueprint.route("/")
         def inicio():

@@ -1,3 +1,60 @@
-{% extends "internal_layout.html" %}
-{% set action_label = "Editar" %}
-{% block module_content %}{% include "_module_form_content.html" %}{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+
+<h1 class="text-2xl font-bold text-[#7a5d47] mb-6">
+    Editar Inventario Producto
+</h1>
+
+<div class="bg-[#f5f1e6] p-6 rounded-xl shadow max-w-2xl">
+
+<form method="POST">
+{{ form.hidden_tag() }}
+
+<div class="grid grid-cols-2 gap-4">
+
+    <!-- PRODUCTO -->
+    <div>
+        <label class="text-sm">Producto</label>
+        <input type="text" value="{{ inventario.producto_nombre }}"
+            class="w-full border px-3 py-2 rounded-lg" disabled>
+    </div>
+
+    <!-- CANTIDAD -->
+    <div>
+        <label class="text-sm">Cantidad de producto</label>
+        {{ form.cantidad_producto(class="w-full border px-3 py-2 rounded-lg") }}
+    </div>
+
+        <!-- MOTIVO (SELECT) -->
+    <div class="col-span-2">
+        <label class="text-sm">Motivo</label>
+        {{ form.tipo_movimiento(class="w-full border px-3 py-2 rounded-lg") }}
+    </div>
+
+<!-- OBSERVACIONES -->
+<div class="col-span-2">
+    <label class="text-sm">Observaciones</label>
+    {{ form.observaciones(class="w-full border px-3 py-2 rounded-lg") }}
+</div>
+    </div>
+
+</div>
+
+<div class="flex gap-4 mt-6 justify-center">
+
+    <button class="bg-[#9c775b] text-white px-8 py-2 rounded-lg">
+        Guardar
+    </button>
+
+    <a href="{{ url_for('inventario_productos.inicio') }}"
+        class="bg-[#c9a27c] text-white px-8 py-2 rounded-lg">
+        Regresar
+    </a>
+
+</div>
+
+</form>
+
+</div>
+
+{% endblock %}

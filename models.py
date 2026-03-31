@@ -272,3 +272,16 @@ class InventarioProducto(db.Model):
     usuario_creacion = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     fecha_movimiento = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     usuario_movimiento = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    producto = db.relationship('Producto')
+    sucursal = db.relationship('Sucursal')
+    
+class InventarioProductoMovimiento(db.Model):
+    __tablename__ = 'inventario_producto_movimiento'
+
+    id = db.Column(db.Integer, primary_key=True)
+    fk_inventario_producto = db.Column(db.Integer, db.ForeignKey('inventario_producto.id'), nullable=False)
+    cantidad_anterior = db.Column(db.Numeric(10,2), nullable=False)
+    cantidad_nueva = db.Column(db.Numeric(10,2), nullable=False)
+    motivo = db.Column(db.String(255), nullable=False)
+    fecha_movimiento = db.Column(db.DateTime, default=datetime.utcnow)
+    usuario_movimiento = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)

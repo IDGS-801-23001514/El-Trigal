@@ -7,6 +7,7 @@ from forms import ProductoForm, EditProductoForm, BuscarProductoForm, ConfirmarE
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
+from models import InventarioProducto, InventarioProductoMovimiento
 
 productos = create_module_blueprint("productos")
 
@@ -40,15 +41,25 @@ def inicio():
     # Preparar datos para el template
     productos_data = []
     for producto in productos_list.items:
+
+        # VALIDAR INVENTARIO POR CADA PRODUCTO
+        tiene_inventario = InventarioProducto.query.filter(
+            InventarioProducto.fk_producto == producto.id,
+            InventarioProducto.estatus == 'ACTIVO',
+            InventarioProducto.cantidad_producto > 0
+        ).first() is not None
+
         productos_data.append({
             'id': producto.id,
             'nombre': producto.nombre,
             'precio': float(producto.precio),
             'costo': float(producto.costo_produccion),
             'categoria': producto.categoria.nombre,
-            'imagen': f"data:image/png;base64,{base64.b64encode(producto.foto).decode('utf-8')}" if producto.foto else url_for('static', filename='img/placeholder.png')    
-            }
-        )
+            'imagen': f"data:image/png;base64,{base64.b64encode(producto.foto).decode('utf-8')}" if producto.foto else url_for('static', filename='img/placeholder.png'),
+            
+            'tiene_inventario': tiene_inventario
+        })
+        
     
     # Obtener categorías para el filtro
     categorias = CategoriaProducto.query.filter_by(estatus='ACTIVO').all()
@@ -218,6 +229,17 @@ def eliminar(id):
 
     if form.validate_on_submit():
         try:
+            # VALIDAR INVENTARIO ACTIVO
+            inventario = InventarioProducto.query.filter_by(
+                fk_producto=producto.id,
+                estatus='ACTIVO'
+            ).first()
+
+            if inventario:
+                flash('No puedes eliminar este producto porque tiene inventario activo', 'error')
+                return redirect(url_for('productos.inicio'))
+
+            # SI NO TIENE INVENTARIO, ELIMINAR
             producto.estatus = 'INACTIVO'
             producto.usuario_movimiento = get_user_id()
             producto.fecha_movimiento = datetime.utcnow()
@@ -225,7 +247,6 @@ def eliminar(id):
             db.session.commit()
 
             flash(f'Producto "{producto.nombre}" desactivado exitosamente', 'success')
-
         except Exception as e:
             db.session.rollback()
             flash(f'Error al desactivar el producto: {str(e)}', 'error')
