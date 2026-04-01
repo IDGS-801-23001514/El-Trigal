@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Solicitud de producción{% endblock %}
+
+{% block content %}
+
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-[#6b4f3a]">Solicitud de producción</h1>
+
+    <a href="{{ url_for('solicitud_produccion.detalle') }}"
+       class="bg-[#a67c52] text-white px-4 py-2 rounded-lg hover:bg-[#8d6846]">
+        Ver detalle
+    </a>
+</div>
+
+
+<!-- Filtros -->
+<form method="GET" class="flex gap-4 mb-6">
+    
+    <input type="text" id="buscador" name="buscar"
+        placeholder="Buscar producto..."
+        value="{{ buscar }}"
+        class="px-4 py-2 rounded-lg bg-white shadow w-64">
+
+    <select id="filtroCategoria" name="categoria"
+        class="px-4 py-2 rounded-lg bg-white shadow">
+
+        <option value="0">Todos los productos</option>
+
+        {% for cat in categorias %}
+            <option value="{{ cat.id }}"
+                {% if categoria_id == cat.id %}selected{% endif %}>
+                {{ cat.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+
+</form>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+{% for producto in productos %}
+<div class="producto-item bg-white p-4 rounded-xl shadow-lg h-full flex flex-col justify-between"
+     data-categoria-id="{{ producto.categoria_id }}">
+
+    <img src="{{ producto.imagen }}"
+         onclick="abrirModal({{ producto.id }})"
+         class="w-full h-40 object-cover rounded-xl mb-3 cursor-pointer hover:scale-105 transition">
+
+    <div>
+        <h2 class="nombre-producto text-lg font-bold text-[#9c775b] line-clamp-2">           
+            {{ producto.nombre }}
+        </h2>
+
+        <p class="text-xs text-gray-600 mb-1">
+            {{ producto.categoria }}
+        </p>
+
+        <p class="text-xs">
+            <span class="font-semibold">Disponible:</span> {{ producto.stock }}
+        </p>
+
+        <p class="text-sm font-semibold text-gray-700 mt-1">
+            ${{ producto.precio }}
+        </p>
+    </div>
+
+    <button onclick="abrirModal({{ producto.id }}, '{{ producto.nombre }}')"
+        class="mt-3 text-xs border border-[#a16207] text-[#a16207] px-3 py-1 rounded-lg hover:bg-[#a16207] hover:text-white transition">
+        Solicitar
+    </button>
+
+</div>
+{% endfor %}
+
+</div>
+<!-- Modal agregar -->
+<div id="modal" class="fixed inset-0 bg-black/40 hidden justify-center items-center">
+
+    <div class="bg-[#efe3c6] rounded-xl p-6 w-96 shadow-lg">
+
+        <h2 class="text-xl font-bold text-[#7a5d47] mb-4">
+            Nueva orden de producción
+        </h2>
+
+        <form method="POST" action="{{ url_for('solicitud_produccion.agregar') }}">
+
+            <input type="hidden" name="producto_id" id="producto_id">
+
+            <input type="text" id="producto_nombre" disabled
+                class="w-full mb-4 px-3 py-2 rounded bg-gray-200">
+
+            <input type="number" name="cantidad" placeholder="Cantidad a solicitar"
+                class="w-full mb-4 px-3 py-2 rounded bg-white" required>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="cerrarModal()"
+                    class="px-4 py-2 bg-gray-400 text-white rounded">
+                    Cancelar
+                </button>
+
+                <button type="submit"
+                    class="px-4 py-2 bg-[#b9772b] text-white rounded">
+                    Guardar
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- Modal detalle -->
+<div id="modalDetalle" class="fixed inset-0 bg-black/40 hidden justify-center items-center">
+
+    <div class="bg-[#d6c3a5] rounded-2xl p-6 w-[500px] relative">
+
+        <!-- cerrar -->
+        <button onclick="cerrarDetalle()" class="absolute top-3 right-4 text-xl">✖</button>
+
+        <h2 id="detalle_nombre" class="text-xl font-bold mb-4"></h2>
+
+        <div class="flex gap-4">
+            <img src="{{ url_for('static', filename='img/default.png') }}"
+                 class="w-40 h-32 object-cover rounded-xl">
+
+            <div>
+                <p><b>Precio:</b> $<span id="detalle_precio"></span></p>
+                <p><b>Costo:</b> $0.0</p>
+                <p><b>Categoría:</b> <span id="detalle_categoria"></span></p>
+
+                <div class="mt-4 flex gap-2">
+                    <button class="bg-[#9c775b] text-white px-4 py-2 rounded">
+                        Editar
+                    </button>
+
+                    <button onclick="cerrarDetalle()"
+                        class="bg-[#c49a6c] text-white px-4 py-2 rounded">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function abrirModal(id, nombre){
+    document.getElementById('modal').classList.remove('hidden');
+    document.getElementById('modal').classList.add('flex');
+
+    document.getElementById('producto_id').value = id;
+    document.getElementById('producto_nombre').value = nombre;
+}
+
+function cerrarModal(){
+    document.getElementById('modal').classList.add('hidden');
+}
+
+function abrirDetalle(nombre, precio, categoria){
+    document.getElementById('modalDetalle').classList.remove('hidden');
+    document.getElementById('modalDetalle').classList.add('flex');
+
+    document.getElementById('detalle_nombre').innerText = nombre;
+    document.getElementById('detalle_precio').innerText = precio;
+    document.getElementById('detalle_categoria').innerText = categoria;
+}
+
+function cerrarDetalle(){
+    document.getElementById('modalDetalle').classList.add('hidden');
+}
+
+const buscador = document.getElementById("buscador");
+const filtroCategoria = document.getElementById("filtroCategoria");
+const productos = document.querySelectorAll(".producto-item");
+
+function filtrarProductos() {
+    const texto = buscador.value.toLowerCase();
+    const categoriaSeleccionada = filtroCategoria.value;
+
+    productos.forEach(prod => {
+
+        prod.style.display = "block"; 
+
+        const nombre = prod.querySelector(".nombre-producto").textContent.toLowerCase();
+        const categoria = prod.getAttribute("data-categoria-id");
+
+        const coincideNombre = nombre.includes(texto);
+        const coincideCategoria = (categoriaSeleccionada == "0") || (categoria == categoriaSeleccionada);
+
+        if (!(coincideNombre && coincideCategoria)) {
+            prod.style.display = "none";
+        }
+    });
+}
+
+
+buscador.addEventListener("keyup", filtrarProductos);
+
+
+filtroCategoria.addEventListener("change", filtrarProductos);
+</script>
+
+{% endblock %}

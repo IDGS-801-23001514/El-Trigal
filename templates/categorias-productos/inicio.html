@@ -30,15 +30,8 @@
 
 <!-- Buscador -->
 <div class="flex gap-4 mb-6">
-    <form method="GET" class="flex gap-4 w-full">
-        <input type="text" name="buscar" placeholder="Buscar categoría..."
-            value="{{ buscar }}"
-            class="px-4 py-2 rounded-lg w-1/3 border border-gray-300">
-
-        <button type="submit" class="bg-[#a67c52] text-white px-4 py-2 rounded-lg hover:bg-[#8d6846]">
-            Buscar
-        </button>
-    </form>
+    <input type="text" id="buscador" placeholder="Buscar categoría..."
+        class="px-4 py-2 rounded-lg w-1/3 border border-gray-300">
 </div>
 
 <!-- Cards -->
@@ -46,9 +39,9 @@
 
 {% if categorias %}
     {% for cat in categorias %}
-    <div class="bg-white rounded-xl p-4 shadow-md">
+    <div class="categoria-item bg-white rounded-xl p-4 shadow-md">
 
-        <h2 class="font-semibold text-[#a67c52] mb-2 cursor-pointer"
+        <h2 class="nombre-categoria font-semibold text-[#a67c52] mb-2 cursor-pointer"
             onclick="openDetailModal('{{ cat.nombre }}', `{{ cat.descripcion }}`, {{ cat.id }})">
             {{ cat.nombre }}
         </h2>
@@ -212,6 +205,24 @@ function openDeleteModal(nombre, id){
 function closeModal(id){
     document.getElementById(id).classList.add('hidden')
 }
+
+const buscador = document.getElementById("buscador");
+const categorias = document.querySelectorAll(".categoria-item");
+
+buscador.addEventListener("keyup", function () {
+    const texto = this.value.toLowerCase();
+
+    categorias.forEach(cat => {
+        const nombre = cat.querySelector(".nombre-categoria").textContent.toLowerCase();
+
+        if (nombre.includes(texto)) {
+            cat.style.display = "block";
+        } else {
+            cat.style.display = "none";
+        }
+    });
+});
+
 
 </script>
 {% endblock %}

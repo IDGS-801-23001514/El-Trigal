@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Visualización de producción{% endblock %}
+
+{% block content %}
+
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-[#6b4f3a]">Visualización de producción</h1>
+
+    <a href="{{ url_for('solicitud_produccion.inicio') }}"
+       class="bg-[#a67c52] text-white px-4 py-2 rounded-lg hover:bg-[#8d6846]">
+        Regresar
+    </a>
+</div>
+
+<!-- Filtros -->
+<form method="GET" class="flex gap-4 mb-6">
+
+    <input type="text" id="buscador" name="buscar"
+        placeholder="Buscar producto..."
+        value="{{ buscar }}"
+        class="px-4 py-2 rounded-lg bg-white shadow w-64">
+
+    <select id="filtroEstado" name="estado"
+        class="px-4 py-2 rounded-lg bg-white shadow">
+
+        <option value="">Todos los estados</option>
+        <option value="PENDIENTE" {% if estado == 'PENDIENTE' %}selected{% endif %}>Pendiente</option>
+        <option value="EN PROCESO" {% if estado == 'EN PROCESO' %}selected{% endif %}>En proceso</option>
+        <option value="CANCELADO" {% if estado == 'CANCELADO' %}selected{% endif %}>Cancelado</option>
+    </select>
+
+    <button class="bg-[#a67c52] text-white px-4 py-2 rounded-lg hover:bg-[#8d6846]">
+        Filtrar
+    </button>
+
+</form>
+
+<h2 class="text-lg font-semibold text-[#7a5d47] mb-4">
+    Órdenes Activas
+</h2>
+
+<!-- Tabla -->
+<div class="bg-white rounded-xl shadow p-4">
+
+    <table class="w-full text-sm">
+
+        <thead class="text-[#7a5d47]">
+            <tr class="border-b">
+                <th class="py-2">ID</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Área</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for orden in ordenes %}
+            <tr class="orden-item border-b hover:bg-gray-50 text-center"
+                data-estado="{{ orden.estado }}">
+
+                <td class="py-2">{{ orden.id }}</td>
+                <td class="nombre-producto">{{ orden.producto }}</td>
+                <td>{{ orden.cantidad }}</td>
+                <td>Ventas</td>
+
+                <td>
+                    {% if orden.estado == 'PENDIENTE' %}
+                        <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
+                            Pendiente
+                        </span>
+                    {% elif orden.estado == 'EN PROCESO' %}
+                        <span class="bg-blue-200 text-blue-800 px-2 py-1 rounded">
+                            Proceso
+                        </span>
+                    {% else %}
+                        <span class="bg-red-200 text-red-800 px-2 py-1 rounded">
+                            Cancelado
+                        </span>
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+
+</div>
+<script>
+const buscador = document.getElementById("buscador");
+const filtroEstado = document.getElementById("filtroEstado");
+const filas = document.querySelectorAll(".orden-item");
+
+function filtrarOrdenes() {
+    const texto = buscador.value.toLowerCase();
+    const estado = filtroEstado.value;
+
+    filas.forEach(fila => {
+
+        fila.style.display = ""; // reset
+
+        const nombre = fila.querySelector(".nombre-producto").textContent.toLowerCase();
+        const estadoFila = fila.getAttribute("data-estado");
+
+        const coincideNombre = nombre.includes(texto);
+        const coincideEstado = (estado === "") || (estadoFila === estado);
+
+        if (!(coincideNombre && coincideEstado)) {
+            fila.style.display = "none";
+        }
+    });
+}
+
+// 🔍 escribir
+buscador.addEventListener("keyup", filtrarOrdenes);
+
+// 📂 cambiar select
+filtroEstado.addEventListener("change", filtrarOrdenes);
+</script>
+
+{% endblock %}

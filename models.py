@@ -285,3 +285,24 @@ class InventarioProductoMovimiento(db.Model):
     motivo = db.Column(db.String(255), nullable=False)
     fecha_movimiento = db.Column(db.DateTime, default=datetime.utcnow)
     usuario_movimiento = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+
+
+class SolicitudProduccion(db.Model):
+    __tablename__ = 'solicitud_produccion'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    fk_producto = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
+    fk_empleado = db.Column(db.Integer, db.ForeignKey('empleado.id'), nullable=False)
+    cantidad_solicitada = db.Column(db.Integer, nullable=False)
+    estado = db.Column(db.Enum('PENDIENTE', 'APROBADA', 'RECHAZADA', 'EN_PRODUCCION', 'TERMINADA'), default='PENDIENTE')
+    observaciones = db.Column(db.Text)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    usuario_creacion = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    fecha_movimiento = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    usuario_movimiento = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    
+    # Relationships
+    producto = db.relationship('Producto', backref='solicitudes_produccion')
+    empleado = db.relationship('Empleado', backref='solicitudes_produccion')
+    usuario_creador = db.relationship('Usuario', foreign_keys=[usuario_creacion], backref='solicitudes_creadas')
+    usuario_editor = db.relationship('Usuario', foreign_keys=[usuario_movimiento], backref='solicitudes_editadas')

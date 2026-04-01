@@ -211,6 +211,19 @@ MODULES = [
         ],
     },
     {
+    "slug": "solicitud-produccion",
+    "name": "Solicitud de Producción",
+    "description": "Solicitud desde ventas para producir productos cuando el stock es insuficiente.",
+    "search_placeholder": "Buscar solicitud...",
+    "filter_label": "Todos los estados",
+    "fields": ["Producto", "Cantidad", "Empleado", "Estado"],
+    "columns": ["ID", "Producto", "Cantidad", "Estado"],
+    "items": [
+        {"title": "SOL-001", "subtitle": "Conchas", "meta": "Pendiente"},
+        {"title": "SOL-002", "subtitle": "Pan de muerto", "meta": "Aprobada"},
+    ],
+    },
+    {
         "slug": "clientes",
         "name": "Clientes",
         "description": "Registro de clientes para pedidos, contacto y seguimiento comercial.",
@@ -245,8 +258,8 @@ def create_module_blueprint(module_slug):
     module = MODULE_MAP[module_slug]
     blueprint = Blueprint(module_slug.replace("-", "_"), __name__, template_folder="../templates")
 
-    # ⚠️ SOLO crear rutas SI NO es productos, categorias productos o inventario productos
-    if module_slug not in ("productos", "categorias-productos", "inventario-productos"):
+   
+    if module_slug not in ("productos", "categorias-productos", "inventario-productos", "solicitud-produccion"):
 
         @blueprint.route("/")
         def inicio():

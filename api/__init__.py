@@ -15,6 +15,7 @@ from api.recetas import recetas
 from api.sucursales import sucursales
 from api.usuarios import usuarios
 from api.ventas import ventas
+from api.solicitud_produccion import solicitud_produccion
 
 
 ALL_BLUEPRINTS = [
@@ -35,4 +36,5 @@ ALL_BLUEPRINTS = [
     pedidos,
     ventas,
     clientes,
+    solicitud_produccion,
 ]

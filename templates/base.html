@@ -49,6 +49,16 @@
        {% endif %}">
         Inventario de productos
     </a>
+     <!-- Solicitud de producción -->
+    <a href="{{ url_for('solicitud_produccion.inicio') }}"
+       class="block px-6 py-3 rounded-lg transition
+       {% if request.endpoint.startswith('solicitud_produccion') %}
+           bg-[#ae712f] text-white
+       {% else %}
+           bg-[#b9772b] hover:bg-[#ae712f]/80 text-white
+       {% endif %}">
+        Solicitud de producción
+    </a>
 </nav>
     </aside>
 

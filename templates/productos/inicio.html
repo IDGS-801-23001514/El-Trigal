@@ -15,11 +15,11 @@
 
 <!-- Filtros -->
 <form method="GET" class="flex gap-4 mb-6">
-    <input type="text" name="buscar" placeholder="Buscar producto..."
+    <input type="text" id="buscador" name="buscar" placeholder="Buscar producto..."
            value="{{ buscar }}"
            class="px-4 py-2 border rounded-lg w-1/3">
 
-    <select name="categoria" class="px-4 py-2 border rounded-lg">
+    <select id="filtroCategoria" name="categoria" class="px-4 py-2 border rounded-lg">
         <option value="0">Todas las categorías</option>
         {% for cat in categorias %}
             <option value="{{ cat.id }}" {% if categoria_id == cat.id %}selected{% endif %}>
@@ -32,6 +32,7 @@
         Filtrar
     </button>
 </form>
+
 <!-- Mensajes -->
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -50,13 +51,16 @@
 <div class="grid grid-cols-4 gap-6">
 
 {% for producto in productos %}
-<div class="bg-white p-4 rounded-xl shadow">
+<div class="producto-item bg-white p-4 rounded-xl shadow"
+     data-categoria="{{ producto.categoria }}">
 
     <img src="{{ producto.imagen }}"
          onclick="abrirModal({{ producto.id }})"
          class="rounded-lg mb-3 h-40 w-full object-cover cursor-pointer hover:scale-105 transition">
 
-    <h2 class="font-bold text-[#6b4f3b]">{{ producto.nombre }}</h2>
+    <h2 class="nombre-producto font-bold text-[#6b4f3b]">
+    {{ producto.nombre }}
+    </h2>
 
     <p class="text-sm text-gray-600">$ {{ "%.2f"|format(producto.precio) }}</p>
 
@@ -240,6 +244,29 @@ function closeModal(id){
     modal.classList.add('hidden')
     modal.classList.remove('flex')
 }
+
+const buscador = document.getElementById("buscador");
+const productos = document.querySelectorAll(".producto-item");
+
+function filtrarProductos() {
+    const texto = buscador.value.toLowerCase();
+
+    productos.forEach(prod => {
+        prod.style.display = "block";
+        const nombre = prod.querySelector(".nombre-producto").textContent.toLowerCase();
+        const coincideNombre = nombre.includes(texto);
+
+        if (coincideNombre) {
+            prod.style.display = "block";
+        } else {
+            prod.style.display = "none";
+        }
+    });
+}
+
+buscador.addEventListener("keyup", filtrarProductos);
+
+filtroCategoria.addEventListener("change", filtrarProductos);
 
 </script>
 

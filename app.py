@@ -53,4 +53,3 @@ def panel():
 if __name__ == "__main__":
     app.run(port=4000, debug=True)
     
-print([bp.name for bp in ALL_BLUEPRINTS])
