@@ -91,7 +91,7 @@ def inicio():
             # FOTO
             'imagen': f"data:image/png;base64,{base64.b64encode(producto.foto).decode('utf-8')}"
             if producto and producto.foto
-            else url_for('static', filename='img/placeholder.png')
+            else url_for('static', filename='img/defecto.jpg')
         })
 
     # ALERTA GLOBAL (AQUÍ VA)

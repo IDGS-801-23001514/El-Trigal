@@ -17,7 +17,7 @@ def obtener_imagen_base64(foto):
         imagen = base64.b64encode(foto).decode('utf-8')
         return f"data:image/jpeg;base64,{imagen}"
     
-    return url_for('static', filename='img/placeholder.png')
+    return url_for('static', filename='img/defecto.jpg')
 
 @solicitud_produccion.route("/")
 def inicio():

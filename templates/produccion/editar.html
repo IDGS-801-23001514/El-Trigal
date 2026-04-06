@@ -4,33 +4,35 @@
 
 {% block content %}
 
-
-<form method="POST" >
+<form method="POST">
 
     <div class="grid grid-cols-2 gap-4 mb-4">
 
-        <input type="number" name="piezas"
-            placeholder="Cantidad de piezas correctas"
-            class="p-2 border rounded-lg" required>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold text-[#6b4f3a]">Piezas correctas</label>
+            <input type="number" name="piezas"
+                placeholder="Cantidad de piezas correctas"
+                class="p-2 border rounded-lg" required>
+        </div>
 
-        <input type="number" name="merma"
-            placeholder="Cantidad de merma"
-            class="p-2 border rounded-lg" required>
-            
-        <input type="datetime-local" name="fecha_caducidad"
-            class="p-2 border rounded-lg" required>
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold text-[#6b4f3a]">Merma</label>
+            <input type="number" name="merma"
+                placeholder="Cantidad de merma"
+                class="p-2 border rounded-lg" required>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold text-[#6b4f3a]">Fecha de caducidad</label>
+            <input type="datetime-local" name="fecha_caducidad"
+                class="p-2 border rounded-lg" required>
+        </div>
 
     </div>
 
     <div class="flex gap-4">
-        <button class="btn btn-primary">
-            Guardar y cerrar
-        </button>
-
-        <a href="{{ url_for('produccion.inicio') }}"
-           class="btn btn-outline">
-            Regresar
-        </a>
+        <button class="btn btn-primary">Guardar y cerrar</button>
+        <a href="{{ url_for('produccion.inicio') }}" class="btn btn-outline">Regresar</a>
     </div>
 
 </form>

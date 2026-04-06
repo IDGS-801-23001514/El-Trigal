@@ -85,91 +85,85 @@
 </div>
 
 
-<!-- MODAL ELIMINAR -->
-<div id="modalEliminar" class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-xl w-96 text-center shadow-md">
+<!-- MODAL DETALLE PRODUCTO -->
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+
+    <div class="bg-[#efe3c6] p-6 rounded-xl w-[500px] shadow-md">
+
+        <img id="modal-img"
+             class="w-64 max-h-64 object-contain bg-white rounded-lg mb-4 hidden mx-auto">
+
+        <h2 id="modal-nombre" class="text-xl font-bold text-[#6b4f3a] mb-4"></h2>
+
+        <div>
+            <p class="font-semibold text-[#a67c52] mb-1">Detalles:</p>
+            <p class="text-sm text-gray-700"><b>Precio:</b> $ <span id="modal-precio"></span></p>
+            <p class="text-sm text-gray-700"><b>Costo:</b> $ <span id="modal-costo"></span></p>
+            <p class="text-sm text-gray-700"><b>Categoría:</b> <span id="modal-categoria"></span></p>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+            <a id="modal-editar"
+               class="bg-[#a67c52] text-white px-4 py-2 rounded-lg hover:bg-[#8d6846]">
+                Editar detalles
+            </a>
+            <button onclick="cerrarModal()"
+                    class="border border-[#a67c52] px-4 py-2 rounded-lg hover:bg-[#d2a679]">
+                Cerrar ventana
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL ELIMINAR PRODUCTO -->
+<div id="modalEliminar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-[#efe3c6] p-6 rounded-xl w-96 text-center shadow-md">
 
         <h2 class="text-lg font-bold text-[#6b4f3a] mb-4">
             Confirmar eliminación
         </h2>
 
-        <p class="mb-4">
-            ¿Estás seguro de eliminar este producto?
-        </p>
+        <p class="mb-4 text-gray-700">¿Estás seguro de eliminar este producto?</p>
 
         <p id="deleteNombre" class="mb-6 text-[#a67c52] font-semibold"></p>
 
         <form id="formEliminar" method="POST">
-
             {{ form_eliminar.hidden_tag() }}
-
             <div class="flex justify-center gap-4">
-
                 {{ form_eliminar.confirm(
                     class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
                 ) }}
-
                 <button type="button" onclick="closeModal('modalEliminar')"
-                    class="bg-gray-400 text-white px-4 py-2 rounded-lg">
+                        class="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500">
                     Cancelar
                 </button>
-
             </div>
-
         </form>
-
-    </div>
-</div>
-
-<!-- MODAL -->
-<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-
-    <div class="bg-[#efe3c6] p-6 rounded-2xl w-[700px] relative">
-
-        <button onclick="cerrarModal()" class="absolute top-3 right-4 text-xl">✖</button>
-
-        <h2 id="modal-nombre" class="text-xl font-bold text-[#6b4f3b] mb-4"></h2>
-
-        <div class="flex gap-6">
-            <img id="modal-img" class="w-64 rounded-lg">
-  
-            <div>
-                <p><b>Precio:</b> $ <span id="modal-precio"></span></p>
-                <p><b>Costo:</b> $ <span id="modal-costo"></span></p>
-                <p><b>Categoría:</b> <span id="modal-categoria"></span></p>
-
-                <div class="mt-4 justify-end flex gap-2">
-                    <a id="modal-editar"
-                       class="bg-[#a67c52] text-white px-4 py-2 rounded-lg hover:bg-[#8d6846]">
-                        Editar
-                    </a>
-
-                    <button onclick="cerrarModal()"
-                        class="border border-[#a67c52] px-4 py-2 rounded-lg hover:bg-[#d2a679]">
-                        Cerrar
-                    </button>
-                </div>
-        </div>
-            </div>
-        </div>
 
     </div>
 </div>
 
 <script>
 function abrirModal(id) {
-    let data = document.getElementById("producto-" + id);
+    const data = document.getElementById("producto-" + id);
 
-    document.getElementById("modal-nombre").innerText = data.querySelector(".nombre").innerText;
-    document.getElementById("modal-precio").innerText = data.querySelector(".precio").innerText;
-    document.getElementById("modal-costo").innerText = data.querySelector(".costo").innerText;
+    document.getElementById("modal-nombre").innerText  = data.querySelector(".nombre").innerText;
+    document.getElementById("modal-precio").innerText  = data.querySelector(".precio").innerText;
+    document.getElementById("modal-costo").innerText   = data.querySelector(".costo").innerText;
     document.getElementById("modal-categoria").innerText = data.querySelector(".categoria").innerText;
-    document.getElementById("modal-img").src = data.querySelector(".imagen").src;
+    document.getElementById("modal-editar").href       = "/productos/editar/" + id;
 
-    document.getElementById("modal-editar").href = "/productos/editar/" + id;
+    const img = document.getElementById("modal-img");
+    const src = data.querySelector(".imagen").src;
+    if (src) {
+        img.src = src;
+        img.classList.remove("hidden");
+    } else {
+        img.classList.add("hidden");
+    }
 
     document.getElementById("modal").classList.remove("hidden");
-    document.getElementById("modal").classList.add("flex");
 }
 
 function cerrarModal() {

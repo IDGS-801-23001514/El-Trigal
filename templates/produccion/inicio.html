@@ -56,7 +56,8 @@
         <div 
             class="orden-item grid grid-cols-6 items-center text-center border border-[#d6c3a5] rounded-xl px-6 py-4 mb-3 hover:shadow-md transition"
             data-producto="{{ p.producto | lower }}"
-            data-estado="{{ p.estado }}">
+            data-estado="{{ p.estado }}"
+            data-fecha="{{ p.fecha.isoformat() }}">
 
             <div class="font-bold text-[#7a5d47]">
                 {{ p.id }}
@@ -71,7 +72,13 @@
             </div>
 
             <div>
-                Ventas
+                {% if p.origen == 'INTERNO' %}
+                    Producción
+                {% elif p.origen == 'SOLICITUD_VENTAS' or p.origen == 'SOLICITUD' %}
+                    Ventas
+                {% else %}
+                    {{ p.origen }}
+                {% endif %}
             </div>
 
             <!-- ESTADO -->
@@ -135,29 +142,43 @@
 </div>
 
 <script>
-    const input = document.getElementById('inputBuscar');
+    const input  = document.getElementById('inputBuscar');
     const select = document.getElementById('selectEstado');
+    const btnHistorial = document.getElementById('btnHistorial');
 
-    // Búsqueda en tiempo real al escribir
+    let mostrarTodos = false;
+    const LIMITE_MS  = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+
     input.addEventListener('input', filtrar);
-
-    // También filtra al cambiar el select directamente
     select.addEventListener('change', filtrar);
 
+    btnHistorial.addEventListener('click', function () {
+        mostrarTodos = !mostrarTodos;
+        this.textContent = mostrarTodos ? 'Ocultar historial' : 'Ver historial completo';
+        filtrar();
+    });
+
     function filtrar() {
-        const textoBuscar = input.value.toLowerCase().trim();
+        const textoBuscar  = input.value.toLowerCase().trim();
         const estadoFiltro = select.value;
+        const ahora        = Date.now();
 
         document.querySelectorAll('.orden-item').forEach(item => {
-            const producto = item.dataset.producto;   // ya en lowercase desde Jinja
-            const estado   = item.dataset.estado;
+            const producto  = item.dataset.producto;
+            const estado    = item.dataset.estado;
+            const fecha     = new Date(item.dataset.fecha).getTime();
+            const esReciente = (ahora - fecha) <= LIMITE_MS;
 
             const coincideTexto  = producto.includes(textoBuscar);
             const coincideEstado = estadoFiltro === '' || estado === estadoFiltro;
+            const coincideFecha  = mostrarTodos || esReciente;
 
-            item.style.display = (coincideTexto && coincideEstado) ? '' : 'none';
+            item.style.display = (coincideTexto && coincideEstado && coincideFecha) ? '' : 'none';
         });
     }
+
+    // Aplicar filtro al cargar
+    filtrar();
 </script>
 
 {% endblock %}

@@ -40,50 +40,49 @@ def iniciar(id):
 
 @produccion.route("/")
 def inicio():
-
     estado = request.args.get("estado", "")
     buscar = request.args.get("buscar", "")
 
     data = []
 
-    # 🔵 1. PRODUCCIÓN INTERNA (M15)
     producciones = Produccion.query.order_by(Produccion.id.desc()).all()
 
     for p in producciones:
-
-        detalle = ProduccionDetalle.query.filter_by(
-            fk_produccion=p.id
-        ).first()
-
+        detalle = ProduccionDetalle.query.filter_by(fk_produccion=p.id).first()
         if not detalle:
             continue
-
         producto = Producto.query.get(detalle.fk_producto)
-
         data.append({
             "id": p.id,
             "producto": producto.nombre,
             "cantidad": detalle.cantidad_solicitada,
             "estado": p.estado,
-            "tipo": "PRODUCCION"  # 🔥 CLAVE
+            "tipo": "PRODUCCION",
+            "origen": detalle.origen if detalle.origen else "INTERNO",
+            "fecha": p.fecha_creacion or datetime.min   # <-- AGREGA
         })
 
-    # 🟡 2. SOLICITUDES (M16)
-    solicitudes = SolicitudProduccion.query.order_by(
-        SolicitudProduccion.id.desc()
-    ).all()
+    solicitudes_usadas = set()
+    for d in ProduccionDetalle.query.all():
+        if d.fk_solicitud:
+            solicitudes_usadas.add(d.fk_solicitud)
 
-    for s in solicitudes:
-
+    for s in SolicitudProduccion.query.order_by(SolicitudProduccion.id.desc()).all():
+        if s.id in solicitudes_usadas:
+            continue
         producto = Producto.query.get(s.fk_producto)
-
         data.append({
             "id": s.id,
             "producto": producto.nombre,
             "cantidad": s.cantidad_solicitada,
             "estado": s.estado,
-            "tipo": "SOLICITUD"  # 🔥 CLAVE
+            "tipo": "SOLICITUD",
+            "origen": "SOLICITUD",
+            "fecha": s.fecha_creacion or datetime.min
         })
+
+    # Ordenar por fecha DESC, y como desempate por id DESC
+    data.sort(key=lambda x: (x["fecha"], x["id"]), reverse=True)
 
     return render_template(
         "produccion/inicio.html",

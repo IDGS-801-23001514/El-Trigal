@@ -55,7 +55,7 @@ def inicio():
             'precio': float(producto.precio),
             'costo': float(producto.costo_produccion),
             'categoria': producto.categoria.nombre,
-            'imagen': f"data:image/png;base64,{base64.b64encode(producto.foto).decode('utf-8')}" if producto.foto else url_for('static', filename='img/defecto.png'),
+            'imagen': f"data:image/png;base64,{base64.b64encode(producto.foto).decode('utf-8')}" if producto.foto else url_for('static', filename='img/defecto.jpg'),
             
             'tiene_inventario': tiene_inventario
         })
@@ -109,8 +109,7 @@ def agregar():
                     return redirect(url_for('productos.agregar'))
 
             else:
-                with open('static/img/defecto.jpg', 'rb') as f:
-                    foto = f.read()
+                foto = None
             
             # Crear nuevo producto
             nuevo_producto = Producto(
@@ -153,7 +152,7 @@ def detalle(id):
         'precio': float(producto.precio),
         'costo': float(producto.costo_produccion),
         'categoria': producto.categoria.nombre,
-        'imagen': f"data:image/png;base64,{base64.b64encode(producto.foto).decode('utf-8')}" if producto.foto else url_for('static', filename='img/placeholder.png')    }
+        'imagen': f"data:image/png;base64,{base64.b64encode(producto.foto).decode('utf-8')}" if producto.foto else url_for('static', filename='img/defecto.jpg')    }
     
     return render_template('productos/detalle.html', producto=producto_data)
 
@@ -220,7 +219,7 @@ def editar(id):
         'precio': float(producto.precio),
         'costo': float(producto.costo_produccion),
         'categoria': producto.categoria.nombre,
-        'imagen': f"data:image/png;base64,{base64.b64encode(producto.foto).decode('utf-8')}" if producto.foto else url_for('static', filename='img/placeholder.png')    }
+        'imagen': f"data:image/png;base64,{base64.b64encode(producto.foto).decode('utf-8')}" if producto.foto else url_for('static', filename='img/defecto.jpg')    }
     
     return render_template('productos/editar.html', form=form, producto=producto_data,imagen=producto_data['imagen'])
 
